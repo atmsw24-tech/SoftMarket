@@ -1,45 +1,54 @@
 # SoftMarket + bolt.diy integration
 
-## Current integration boundary
+## Architecture
 
-SoftMarket and bolt.diy run as separate applications. SoftMarket owns marketplace accounts and listings. bolt.diy owns the AI coding workspace, browser-based runtime, code editor and live preview. This avoids trying to run WebContainers inside the Next.js marketplace server.
+SoftMarket remains the marketplace and account home. bolt.diy remains the AI coding workspace and runtime. The two applications are deployed separately so the browser-based WebContainer runtime is not forced into the Next.js marketplace server.
 
-The SoftMarket /studio and /builder routes are launch pages. They open the configured bolt.diy deployment; they do not themselves generate code.
+The /builder and /studio routes are the SoftMarket entry points. They can launch the hosted bolt.diy service in a new tab. An optional iframe mode is also provided, but it is experimental and must be tested against the exact hosting setup before enabling it.
 
-## 1. Deploy bolt.diy separately
+## 1. Deploy bolt.diy
 
-1. Review the upstream project: https://github.com/stackblitz-labs/bolt.diy
-2. Fork it to an account or organization you control.
-3. Follow the upstream README and deployment documentation for the current prerequisites and hosting method.
-4. Configure the OpenAI provider in bolt.diy's Settings → Providers, or configure its server environment using the upstream .env.example.
-5. Test prompt-to-code generation, terminal startup and live preview directly in the bolt.diy deployment.
+1. Fork https://github.com/stackblitz-labs/bolt.diy into an account you control.
+2. Follow the upstream installation/deployment instructions.
+3. Configure an AI provider in bolt.diy under Settings → Providers. OpenAI is supported; its API key belongs in the bolt.diy deployment, not in browser code.
+4. Test prompt generation, terminal startup, project files and live preview directly on the deployed builder.
 
-Upstream currently documents Node.js >= 22.12.0 and pnpm >= 9.15.9 for local installation. Its README describes OpenAI as a supported provider and includes a browser workspace with code editor, terminal and live preview.
+Upstream documents a browser coding workspace, terminal, live preview, GitHub import/export and multiple AI providers. See the official documentation: https://stackblitz-labs.github.io/bolt.diy/
 
-## 2. Connect SoftMarket to the deployed builder
+## 2. Connect the SoftMarket entry point
 
-In the SoftMarket Vercel project, add this server-side environment variable:
+In your SoftMarket hosting environment, configure:
 
-    BOLT_DIY_URL=https://your-builder-host.example
+    BOLT_DIY_URL=https://your-real-builder-domain.example
 
-Use the actual HTTPS URL of your bolt.diy deployment. Do not add a NEXT_PUBLIC_ prefix. Redeploy SoftMarket after saving the variable.
+Do not use the example URL literally. Keep this variable server-side (no NEXT_PUBLIC_ prefix). Redeploy SoftMarket after setting it.
 
-The /studio and /builder pages will then show a Launch AI Builder link that opens the configured service in a new tab.
+With only BOLT_DIY_URL set, /builder and /studio show a Launch AI Builder link that opens bolt.diy in a new tab. This is the reliable fallback.
 
-## 3. OpenAI keys
+## 3. Optional embedded mode
 
-Configure the OpenAI API key in the bolt.diy service itself, using its provider settings or its supported server-side environment configuration. The SoftMarket OPENAI_API_KEY is not automatically shared with the separate bolt.diy service. Never commit API keys to GitHub or put them in browser-visible NEXT_PUBLIC_ variables.
+After the builder is deployed, test whether its host permits framing and whether the full WebContainer experience works inside an iframe. Only then set:
 
-## 4. Still required for a full integrated SaaS experience
+    BOLT_DIY_EMBED=true
 
-This connection is currently a launch-link integration, not single sign-on or shared project storage. Before treating it as one seamless product, implement and security-test:
+The Builder page will render the bolt.diy workspace in an iframe and retain an Open in new tab fallback.
+
+Important: embedding is not guaranteed. WebContainers require cross-origin isolation (COOP/COEP headers), and iframe/browser policy can block the workspace or its worker/runtime. A blank frame or WebContainer security error means the deployment needs additional configuration or must use the separate-tab mode. Do not weaken security headers just to make framing work. Review the WebContainer documentation: https://webcontainers.io/guides/introduction
+
+## 4. OpenAI keys
+
+Configure the OpenAI API key in bolt.diy itself (Settings → Providers or its supported deployment environment). SoftMarket's OPENAI_API_KEY is not automatically shared with a separately deployed bolt.diy instance. Never commit API keys to GitHub or expose them through NEXT_PUBLIC_ variables.
+
+## 5. Still required for a seamless multi-user SaaS
+
+This work provides an entry point and optional embed surface, not SSO or shared project persistence. Before offering it as one seamless product, implement and security-test:
 - shared sign-in / SSO between SoftMarket and the builder;
 - per-user project ownership and persistent storage;
 - secure GitHub import/export with scoped OAuth permissions;
 - quotas, abuse prevention and AI cost controls;
 - isolated execution and resource limits;
-- a verified production WebContainers commercial license.
+- a verified commercial WebContainers license.
 
 ## Licensing gate
 
-bolt.diy is MIT-licensed, but it uses the WebContainers API. StackBlitz states that a commercial license is required for production use in a commercial, for-profit setting serving customers, prospective customers or employees. Prototypes and proofs of concept are exempt. Review https://webcontainers.io/enterprise before launching this to paying users.
+bolt.diy source code is MIT-licensed, but its WebContainers API has separate terms. StackBlitz states that a commercial license is required for production use in a commercial, for-profit setting serving customers, prospective customers or employees. Prototypes and proofs of concept are exempt. Verify current terms with StackBlitz before launching to paying users.
