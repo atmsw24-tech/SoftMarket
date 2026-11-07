@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowUpRight, Bot, Code2, ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
 import BuilderFrame from "./BuilderFrame";
 
