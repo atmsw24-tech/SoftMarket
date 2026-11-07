@@ -18,6 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Link>
         <nav className="flex items-center gap-5 text-sm font-semibold">
           <Link href="/marketplace" className="hidden sm:block">Marketplace</Link>
+          <Link href="/builder" className="text-[#5b4bdb]">AI Builder</Link>
           <Link href="/sell" className="hidden sm:block">Sell software</Link>
           <Link href="/dashboard" className="hidden sm:block">Dashboard</Link>
           <Link href="/login" className="btn btn-primary">Sign in</Link>
