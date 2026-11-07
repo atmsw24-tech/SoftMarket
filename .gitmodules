@@ -1,0 +1,3 @@
+[submodule "builder/bolt.diy"]
+	path = builder/bolt.diy
+	url = https://github.com/stackblitz-labs/bolt.diy.git
