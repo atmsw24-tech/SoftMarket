@@ -28,7 +28,7 @@ export default function BuilderFrame({ src }: BuilderFrameProps) {
           title="SoftMarket AI Builder powered by bolt.diy"
           src={src}
           className="block w-full min-h-[720px] bg-white"
-          allow="clipboard-read; clipboard-write; fullscreen"
+          allow="cross-origin-isolated; clipboard-read; clipboard-write; fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
